@@ -1,0 +1,5 @@
+.vscode/
+redis.conf
+
+*.o
+*.so
