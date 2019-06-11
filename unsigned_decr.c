@@ -3,7 +3,7 @@
 #include <string.h>
 
 int UnsignedDecr_RedisCommand(RedisModuleCtx *ctx, RedisModuleString **argv,
-                          int argc) {
+                              int argc) {
   if (argc != 2) {
     return RedisModule_WrongArity(ctx);
   }
@@ -25,10 +25,7 @@ int UnsignedDecr_RedisCommand(RedisModuleCtx *ctx, RedisModuleString **argv,
   char *keyValuePtr = RedisModule_StringDMA(key, &len, REDISMODULE_WRITE);
   int keyValue = atoi(keyValuePtr);
 
-  // If the key was set outside of this command, pin the value to 0. This is
-  // only a mask for when only command is modifying the same key.
-  // todo: log warning and reset to 0?
-  if (keyValue <= 0) {
+  if (keyValue == 0) {
     RedisModule_CloseKey(key);
     RedisModule_ReplyWithLongLong(ctx, 0);
     return REDISMODULE_OK;
@@ -37,6 +34,11 @@ int UnsignedDecr_RedisCommand(RedisModuleCtx *ctx, RedisModuleString **argv,
   // Decrement the key from direct memory access pointer
   char *str = RedisModule_Alloc(len);
   keyValue--;
+  // If the key was modified outside of this module, clamp the value to 0.
+  if (keyValue < 0) {
+    keyValue = 0;
+  }
+
   sprintf(str, "%d", keyValue);
   *keyValuePtr = *str;
 
