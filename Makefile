@@ -10,4 +10,7 @@ docker:
 docker-run:
 	docker run -itp 6379:6379 redis-local:local
 
-.PHONY: object-code shared-lib docker docker-run
+test:
+	redis-cli --eval unsigned_decr_test.lua && redis-cli flushall
+
+.PHONY: object-code shared-lib docker docker-run test
