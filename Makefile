@@ -10,4 +10,4 @@ docker:
 docker-run:
 	docker run -itp 6379:6379 redis-local:local
 
-.PHONY: docker docker-run
+.PHONY: object-code shared-lib docker docker-run
