@@ -31,14 +31,15 @@ int UnsignedDecr_RedisCommand(RedisModuleCtx *ctx, RedisModuleString **argv,
     return REDISMODULE_OK;
   }
 
-  // Decrement the key from direct memory access pointer
-  char *str = RedisModule_Alloc(len);
-  keyValue--;
-  // If the key was modified outside of this module, clamp the value to 0.
-  if (keyValue < 0) {
+  if (keyValue > 0) {
+    keyValue--;
+  } else {
+    // If the key is signed int, clamp it to 0. This can happen if the key
+    // was modified from outside of this module.
     keyValue = 0;
   }
 
+  char *str = RedisModule_Alloc(len);
   sprintf(str, "%d", keyValue);
   *keyValuePtr = *str;
 
