@@ -39,3 +39,10 @@ end
 
 value = redis.call('unsigned.decr', testKey)
 test(value == 0, 'expected "' .. testKey .. '" key to be 0! got ' .. value)
+
+-- Ensure key string is a digit
+redis.call('set', testKey, 'foo')
+local got = redis.pcall('unsigned.decr', testKey)
+if got["err"] == nil then
+  test(false, 'checking key for non-digit value failed!')
+end

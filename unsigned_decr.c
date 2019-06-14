@@ -1,4 +1,5 @@
 #include "redismodule.h"
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -23,8 +24,23 @@ int UnsignedDecr_RedisCommand(RedisModuleCtx *ctx, RedisModuleString **argv,
 
   size_t len;
   char *keyValuePtr = RedisModule_StringDMA(key, &len, REDISMODULE_WRITE);
-  int keyValue = atoi(keyValuePtr);
+  if (keyValuePtr[0] == '-' && len == 1) {
+    return RedisModule_ReplyWithError(ctx, REDISMODULE_ERRORMSG_WRONGTYPE);
+  }
 
+  // Verify that the value is not a signed number. The module does not permit
+  // data modifications to non integer data types, to prevent corruptions.
+  for (int i = 0; i < len; i++) {
+    if (keyValuePtr[i] == '-' && i == 0) {
+      continue;
+    }
+
+    if (!isdigit(keyValuePtr[i])) {
+      return RedisModule_ReplyWithError(ctx, REDISMODULE_ERRORMSG_WRONGTYPE);
+    }
+  }
+
+  int keyValue = atoi(keyValuePtr);
   if (keyValue == 0) {
     RedisModule_CloseKey(key);
     RedisModule_ReplyWithLongLong(ctx, 0);
