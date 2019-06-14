@@ -13,4 +13,7 @@ docker-run:
 test:
 	redis-cli --eval unsigned_decr_test.lua && redis-cli flushall
 
-.PHONY: object-code shared-lib docker docker-run test
+lua-debugger:
+	redis-cli --ldb --eval unsigned_decr_test.lua
+
+.PHONY: object-code shared-lib docker docker-run test lua-debugger
